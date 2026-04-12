@@ -1,0 +1,21 @@
+name: Horusec Scan
+
+on: [push, pull_request]
+
+jobs:
+  horusec-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Run Horusec
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/master/deployments/scripts/install.sh | bash -s latest
+          horusec start -p . -o sarif -O ./horusec-results.sarif
+
+      - name: Upload SARIF file
+        uses: actions/upload-artifact@v3
+        with:
+          name: horusec-results
+          path: ./horusec-results.sarif
