@@ -1,0 +1,22 @@
+name: Horusec Scan
+
+on: [push, pull_request]
+
+jobs:
+  horusec-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4  # Aktualizováno na v4
+
+      - name: Run Horusec
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/ZupIT/horusec/master/deployments/scripts/install.sh | bash -s latest
+          # Tady byla chyba - místo ./horusec použijeme jen horusec
+          horusec start -p . -o sarif -O ./horusec-results.sarif -D -i "**/test/**, **/resources/**"
+
+      - name: Upload SARIF file
+        uses: actions/upload-artifact@v4  # Tady byla ta chyba, teď je tu v4
+        with:
+          name: horusec-results
+          path: ./horusec-results.sarif
