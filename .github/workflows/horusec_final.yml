@@ -6,7 +6,7 @@ jobs:
   horusec-analysis:
     runs-on: ubuntu-latest
     steps:
-      # 1. Stáhneme kód BenchmarkJava (aktuální repo)
+      # 1. Stáhneme kód BenchmarkJava 
       - name: Checkout Benchmark Code
         uses: actions/checkout@v4
         with:
