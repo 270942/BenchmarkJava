@@ -1,0 +1,49 @@
+name: Security Scan
+
+on: [push]
+
+jobs:
+  horusec-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Stáhneme kód BenchmarkJava (aktuální repo)
+      - name: Checkout Benchmark Code
+        uses: actions/checkout@v4
+        with:
+          path: benchmark
+
+      # 2. Stáhneme tvůj opravený Horusec z druhého repa
+      - name: Checkout Fixed Horusec
+        uses: actions/checkout@v4
+        with:
+          repository: 270942/horusec_fixed
+          path: horusec-src
+
+      # 3. Nainstalujeme Go (potřebné pro build)
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      # 4. Sestavíme Horusec binárku
+      - name: Build Horusec
+        run: |
+          cd horusec-src/horusec
+          go build -o ../../horusec_bin ./cmd/app/main.go
+          cd ../..
+          chmod +x ./horusec_bin
+
+      # 5. Spustíme analýzu (limit 1 hodina)
+      # Výsledek uložíme do souboru results.sarif
+      - name: Run Analysis
+        run: |
+          ./horusec_bin start -p ./benchmark -o sarif -O ./results.sarif -t 3600
+
+      # 6. EXPORT: Nahrajeme soubor jako Artifact
+      # Tohle ti umožní si ho po skončení stáhnout
+      - name: Upload SARIF Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: horusec-report
+          path: ./results.sarif
